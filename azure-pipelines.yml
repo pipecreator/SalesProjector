@@ -79,16 +79,16 @@ steps:
     overrideParameters: '-webAppName $(webAppName) -hostingPlanName $(webAppName) -appInsightsLocation "$(location)" -sku "S1 Standard" -registryName $(acrName) -registryLocation "$(location)" -registrySku standard -imageName $(imageName):$(Build.BuildId)'
 
 - task: AzureRmWebAppDeployment@3
-      displayName: 'Deploy Azure App Service'
-      inputs:
-        azureSubscription: 'Free Trial'
-        appType: applinux
-        WebAppName: $(webAppName)
-        DockerNamespace: $(acrHostName)
-        DockerRepository: $(webAppName)
-        DockerImageTag: '$(Build.BuildId)'
-        WebAppUri: webAppUrl
-        TakeAppOfflineFlag: true
-        UseWebDeploy: true
-        RenameFilesFlag: true
+  displayName: 'Deploy Azure App Service'
+  inputs:
+    azureSubscription: 'Free Trial'
+    appType: applinux
+    WebAppName: $(webAppName)
+    DockerNamespace: $(acrHostName)
+    DockerRepository: $(webAppName)
+    DockerImageTag: '$(Build.BuildId)'
+    WebAppUri: webAppUrl
+    TakeAppOfflineFlag: true
+    UseWebDeploy: true
+    RenameFilesFlag: true
 
