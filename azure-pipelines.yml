@@ -22,6 +22,11 @@ variables:
   rgName: 'cswebappdocker$(Build.BuildNumber)-rg'
   imageName: 'cswebappdocker$(Build.BuildNumber)'
   webAppName: 'cswebappdocker$(Build.BuildNumber)'
+  StagingServerName: 'BunningsDBServer'
+  StagingDatabaseName: 'SalesReport'
+  AdminUser: 'SA'
+  AdminPassword: 'sales_01'
+  SQLFile: '$(System.DefaultWorkingDirectory)/sql'
 
 steps:
 - task: AzureResourceGroupDeployment@2
@@ -85,13 +90,21 @@ steps:
     imageName: '$(imageName):$(Build.BuildId)'
   condition: contains(variables['build.sourceBranch'], 'release/')
 
-
-
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(build.artifactstagingdirectory)'
     artifact: drop
     condition: succeededOrFailed()
+
+# - task: SqlAzureDeployment@1
+#   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'release'))
+#   inputs:
+#     azureSubscription: 'AzureSC'
+#     ServerName: '$(StagingServerName)'
+#     DatabaseName: '$(StagingDatabaseName)'
+#     SqlUsername: '$(AdminUser)'
+#     SqlPassword: '$(AdminPassword)'
+#     SQLFile: '$(SQLFile)'
 
 - task: AzureRmWebAppDeployment@4
   displayName: 'Deploy Azure App Service'
