@@ -5,6 +5,7 @@
 
 trigger:
 - master
+- release/*
 
 pool:
   vmImage: 'windows-latest'
@@ -72,6 +73,7 @@ steps:
     imageName: '$(imageName):$(Build.BuildId)'
     useDefaultContext: false
     buildContext: '$(build.artifactsstagingdirectory)'
+  condition: and(contains(variables['build.sourceBranch'], 'release/'))
 
     # Push container image
 - task: Docker@1
@@ -81,6 +83,7 @@ steps:
     azureContainerRegistry: '$(acrHostName)'
     command: 'Push an image'
     imageName: '$(imageName):$(Build.BuildId)'
+  condition: and(contains(variables['build.sourceBranch'], 'release/'))
 
 
 
@@ -98,6 +101,7 @@ steps:
     location: '$(location)'
     csmFile: '$(Pipeline.Workspace)/**/container-webapp-template.json'
     overrideParameters: '-webAppName $(webAppName) -hostingPlanName $(webAppName) -appInsightsLocation "$(location)" -sku "S1 Standard" -registryName $(acrName) -registryLocation "$(location)" -registrySku standard -imageName $(imageName):$(Build.BuildId)'
+  condition: and(contains(variables['build.sourceBranch'], 'release/'))
 
 - task: AzureRmWebAppDeployment@3
   displayName: 'Deploy Azure App Service'
@@ -108,8 +112,9 @@ steps:
     DockerNamespace: $(acrHostName)
     DockerRepository: $(webAppName)
     DockerImageTag: '$(Build.BuildId)'
-    WebAppUri: webAppUrl
+    WebAppUri: salesreportapp
     TakeAppOfflineFlag: true
     UseWebDeploy: true
     RenameFilesFlag: true
+  condition: and(contains(variables['build.sourceBranch'], 'release/'))
 
