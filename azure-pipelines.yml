@@ -15,6 +15,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  location: 'Australia Southeast'
   acrHostName: 'cswebappdocker$(Build.BuildNumber)acr.azurecr.io'
   acrName: 'cswebappdocker$(Build.BuildNumber)acr'
   rgName: 'cswebappdocker$(Build.BuildNumber)-rg'
@@ -58,6 +59,24 @@ steps:
     SearchPattern: '**\bin\**\*.pdb'
   continueOnError: true
 
+- task: Docker@1
+  displayName: 'Build container image'
+  inputs:
+    azureSubscriptionEndpoint: 'AzureSC'
+    azureContainerRegistry: '$(acrHostName)'
+    imageName: '$(imageName):$(Build.BuildId)'
+    useDefaultContext: false
+    buildContext: '$(System.DefaultWorkingDirectory)/PublishedWebApp'
+
+    # Push container image
+- task: Docker@1
+  displayName: 'Push container image'
+  inputs:
+    azureSubscriptionEndpoint: 'AzureSC'
+    azureContainerRegistry: '$(acrHostName)'
+    command: 'Push an image'
+    imageName: '$(imageName):$(Build.BuildId)'
+
 - task: CopyFiles@1
   inputs:
    SourceFolder: '$(build.sourcesdirectory)'
@@ -72,7 +91,7 @@ steps:
 - task: AzureRmWebAppDeployment@4
   displayName: 'Deploy Azure App Service'
   inputs:
-    azureSubscription: 'Free Trial'
+    azureSubscription: 'AzureSC'
     resourceGroupName: '$(rgName)'
     location: '$(location)'
     csmFile: '$(Pipeline.Workspace)/**/container-webapp-template.json'
@@ -81,7 +100,7 @@ steps:
 - task: AzureRmWebAppDeployment@3
   displayName: 'Deploy Azure App Service'
   inputs:
-    azureSubscription: 'Free Trial'
+    azureSubscription: 'AzureSC'
     appType: applinux
     WebAppName: $(webAppName)
     DockerNamespace: $(acrHostName)
