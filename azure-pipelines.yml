@@ -96,15 +96,15 @@ steps:
     artifact: drop
     condition: succeededOrFailed()
 
-- task: SqlAzureDeployment@1
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'release'))
-  inputs:
-    azureSubscription: '<Azure service connection>'
-    ServerName: '$(StagingServerName)'
-    DatabaseName: '$(StagingDatabaseName)'
-    SqlUsername: '$(AdminUser)'
-    SqlPassword: '$(AdminPassword)'
-    SQLFile: '$(SQLFile)'
+# - task: SqlAzureDeployment@1
+#   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'release'))
+#   inputs:
+#     azureSubscription: 'AzureSC'
+#     ServerName: '$(StagingServerName)'
+#     DatabaseName: '$(StagingDatabaseName)'
+#     SqlUsername: '$(AdminUser)'
+#     SqlPassword: '$(AdminPassword)'
+#     SQLFile: '$(SQLFile)'
 
 - task: AzureRmWebAppDeployment@4
   displayName: 'Deploy Azure App Service'
