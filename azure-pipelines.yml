@@ -9,12 +9,28 @@ trigger:
 pool:
   vmImage: 'windows-latest'
 
+name: $(Rev:r)
+
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  acrHostName: 'cswebappdocker$(Build.BuildNumber)acr.azurecr.io'
+  acrName: 'cswebappdocker$(Build.BuildNumber)acr'
+  rgName: 'cswebappdocker$(Build.BuildNumber)-rg'
+  imageName: 'cswebappdocker$(Build.BuildNumber)'
+  webAppName: 'cswebappdocker$(Build.BuildNumber)'
 
 steps:
+- task: AzureResourceGroupDeployment@2
+  displayName: 'Azure Deployment:Create Azure Container Registry'
+  inputs:
+    azureSubscription: 'Free Trial'
+    resourceGroupName: '$(rgName)'
+    location: $(location)
+    csmFile: '$(System.DefaultWorkingDirectory)/**/containerRegistry-template.json'
+    overrideParameters: '-registryName "$(acrName)" -registryLocation "$(location)" -registrySku standard'
+
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
@@ -50,7 +66,32 @@ steps:
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(build.artifactstagingdirectory)'
+  artifact: app
   condition: succeededOrFailed()
 
+- download: current
+      artifact: app
 
+- task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy Azure App Service'
+  inputs:
+    azureSubscription: 'Free Trial'
+    resourceGroupName: '$(rgName)'
+    location: '$(location)'
+    csmFile: '$(Pipeline.Workspace)/**/container-webapp-template.json'
+    overrideParameters: '-webAppName $(webAppName) -hostingPlanName $(webAppName) -appInsightsLocation "$(location)" -sku "S1 Standard" -registryName $(acrName) -registryLocation "$(location)" -registrySku standard -imageName $(imageName):$(Build.BuildId)'
+
+- task: AzureRmWebAppDeployment@3
+      displayName: 'Deploy Azure App Service'
+      inputs:
+        azureSubscription: 'Free Trial'
+        appType: applinux
+        WebAppName: $(webAppName)
+        DockerNamespace: $(acrHostName)
+        DockerRepository: $(webAppName)
+        DockerImageTag: '$(Build.BuildId)'
+        WebAppUri: webAppUrl
+        TakeAppOfflineFlag: true
+        UseWebDeploy: true
+        RenameFilesFlag: true
 
