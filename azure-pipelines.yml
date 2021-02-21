@@ -66,11 +66,8 @@ steps:
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(build.artifactstagingdirectory)'
-  artifact: app
+  artifact: drop
   condition: succeededOrFailed()
-
-- download: current
-      artifact: app
 
 - task: AzureRmWebAppDeployment@4
   displayName: 'Deploy Azure App Service'
