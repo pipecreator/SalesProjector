@@ -59,6 +59,11 @@ steps:
     SearchPattern: '**\bin\**\*.pdb'
   continueOnError: true
 
+- task: CopyFiles@1
+  inputs:
+   SourceFolder: '$(build.sourcesdirectory)'
+   TargetFolder: '$(build.artifactsstagingdirectory)'
+
 - task: Docker@1
   displayName: 'Build container image'
   inputs:
@@ -66,7 +71,7 @@ steps:
     azureContainerRegistry: '$(acrHostName)'
     imageName: '$(imageName):$(Build.BuildId)'
     useDefaultContext: false
-    buildContext: '$(System.DefaultWorkingDirectory)/PublishedWebApp'
+    buildContext: '$(build.artifactsstagingdirectory)'
 
     # Push container image
 - task: Docker@1
@@ -77,10 +82,7 @@ steps:
     command: 'Push an image'
     imageName: '$(imageName):$(Build.BuildId)'
 
-- task: CopyFiles@1
-  inputs:
-   SourceFolder: '$(build.sourcesdirectory)'
-   TargetFolder: '$(build.artifactsstagingdirectory)'
+
 
 - task: PublishBuildArtifacts@1
   inputs:
